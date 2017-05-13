@@ -101,6 +101,30 @@ int main() {
           double steer_value;
           double throttle_value;
 
+          Eigen::VectorXd ptsx_Xd(ptsx.size());
+          Eigen::VectorXd ptsy_Xd(ptsy.size());
+          for (int ix = 0; ix < ptsx.size(); ix++)
+          {
+            ptsx_Xd(ix) = ptsx[ix];
+            ptsy_Xd(ix) = ptsy[ix];
+          }
+
+          std::cout << "ptsx_Xd size: " << ptsx_Xd.size() << std::endl;
+
+          // Fit a polynomial to the above x and y coordinates
+          auto coeffs = polyfit(ptsx_Xd, ptsy_Xd, 1); // JFJ
+
+          // Calculate the cross track error
+          double cte = polyeval(coeffs, 0.0) - py;
+          // Calculate the orientation error
+          double epsi = -atan(coeffs[1]);
+
+          Eigen::VectorXd state(6);
+          state << px, py, psi, v, cte, epsi;
+
+          auto vars = mpc.Solve(state, coeffs);
+          std::cout << "vars: " << vars[0] <<" " << vars[1] << std::endl;
+
           json msgJson;
           msgJson["steering_angle"] = steer_value;
           msgJson["throttle"] = throttle_value;
