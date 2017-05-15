@@ -90,7 +90,10 @@ int main() {
           double px = j[1]["x"];
           double py = j[1]["y"];
           double psi = j[1]["psi"];
+          // double psi = j[1]["psi_unity"];
+          psi = psi - pi();
           double v = j[1]["speed"];
+
 
           /*
           * TODO: Calculate steeering angle and throttle using MPC.
@@ -109,21 +112,44 @@ int main() {
             ptsy_Xd(ix) = ptsy[ix];
           }
 
-          std::cout << "ptsx_Xd size: " << ptsx_Xd.size() << std::endl;
+          // Eigen::VectorXd ptsx_Xd(2);
+          // Eigen::VectorXd ptsy_Xd(2);
+          // for (int ix = 0; ix < 2; ix++)
+          // {
+          //   ptsx_Xd(ix) = ptsx[ix];
+          //   ptsy_Xd(ix) = ptsy[ix];
+          // }
 
           // Fit a polynomial to the above x and y coordinates
-          auto coeffs = polyfit(ptsx_Xd, ptsy_Xd, 1); // JFJ
+          auto coeffs = polyfit(ptsx_Xd, ptsy_Xd, 3); // JFJ
+          // auto coeffs = polyfit(ptsx_Xd, ptsy_Xd, 1); // JFJ
 
-          // Calculate the cross track error
-          double cte = polyeval(coeffs, 0.0) - py;
+          // The cross track error is calculated by evaluating at polynomial at x_t, f(x_t)
+          // and subtracting y.
+          // double cte = polyeval(coeffs, 0.0) - py;
+          double cte = polyeval(coeffs, px) - py;
+
           // Calculate the orientation error
-          double epsi = -atan(coeffs[1]);
+          // Due to the sign starting at 0, the orientation error is -f'(x_t).
+          // derivative of coeffs[0] + coeffs[1] * x_t -> coeffs[1]
+          // double epsi = psi - atan(coeffs[1]);
+          double epsi = psi - atan(coeffs[1] + (2 * coeffs[2] * px) + (3 * coeffs[3]* (px*px)));
+
 
           Eigen::VectorXd state(6);
           state << px, py, psi, v, cte, epsi;
 
+          std::cout << "cte: " << cte
+                    << " psi: " << psi
+                    << " psi_des: " << psi - epsi
+                    << std::endl;
+
+
           auto vars = mpc.Solve(state, coeffs);
-          std::cout << "vars: " << vars[0] <<" " << vars[1] << std::endl;
+          // std::cout << "vars: " << vars[0] <<" " << vars[1] << std::endl;
+          
+          steer_value = vars[0];
+          throttle_value = vars[1];
 
           json msgJson;
           msgJson["steering_angle"] = steer_value;

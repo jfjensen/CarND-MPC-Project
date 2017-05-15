@@ -41,6 +41,12 @@ Self-Driving Car Engineer Nanodegree Program
 3. Compile: `cmake .. && make`
 4. Run it: `./mpc`.
 
+## Building using Docker
+
+1. docker build -t mpcp .
+2. docker run -p 127.0.0.1:4567:4567 mpcp ./mpc
+
+
 ## Tips
 
 1. It's recommended to test the MPC on basic examples to see if your implementation behaves as desired. One possible example
