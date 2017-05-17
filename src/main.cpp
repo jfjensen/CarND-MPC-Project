@@ -91,7 +91,7 @@ int main() {
           double py = j[1]["y"];
           double psi = j[1]["psi"];
           // double psi = j[1]["psi_unity"];
-          psi = psi - pi();
+          // psi = psi - pi();
           double v = j[1]["speed"];
 
 
@@ -106,10 +106,31 @@ int main() {
 
           Eigen::VectorXd ptsx_Xd(ptsx.size());
           Eigen::VectorXd ptsy_Xd(ptsy.size());
+          vector<double> next_x_vals;
+          vector<double> next_y_vals;
           for (int ix = 0; ix < ptsx.size(); ix++)
           {
-            ptsx_Xd(ix) = ptsx[ix];
-            ptsy_Xd(ix) = ptsy[ix];
+            double current_x = ptsx[ix];
+            double current_y = ptsy[ix];
+
+            double diff_x = current_x - px;
+            double diff_y = current_y - py;
+
+            // double psi_veh = psi - (M_PI / 2);
+            // double psi_veh = -psi;
+
+            // double x_transform = - diff_x * sin(psi_veh) + diff_y * cos(psi_veh);
+            // double y_transform = - diff_x * cos(psi_veh) - diff_y * sin(psi_veh);
+            // double x_transform = diff_x * cos(psi_veh) - diff_y * sin(psi_veh);
+            // double y_transform = diff_x * sin(psi_veh) + diff_y * cos(psi_veh);
+
+            double x_transform = diff_x * cos(psi) + diff_y * sin(psi);
+            double y_transform = -diff_x * sin(psi) + diff_y * cos(psi);
+
+            ptsx_Xd(ix) = x_transform;
+            ptsy_Xd(ix) = y_transform;
+            next_x_vals.push_back(x_transform);
+            next_y_vals.push_back(y_transform);
           }
 
           // Eigen::VectorXd ptsx_Xd(2);
@@ -119,7 +140,7 @@ int main() {
           //   ptsx_Xd(ix) = ptsx[ix];
           //   ptsy_Xd(ix) = ptsy[ix];
           // }
-
+          // psi = psi - pi();
           // Fit a polynomial to the above x and y coordinates
           auto coeffs = polyfit(ptsx_Xd, ptsy_Xd, 3); // JFJ
           // auto coeffs = polyfit(ptsx_Xd, ptsy_Xd, 1); // JFJ
@@ -127,33 +148,63 @@ int main() {
           // The cross track error is calculated by evaluating at polynomial at x_t, f(x_t)
           // and subtracting y.
           // double cte = polyeval(coeffs, 0.0) - py;
-          double cte = polyeval(coeffs, px) - py;
+          double cte = polyeval(coeffs, 0.0);
+          // double cte = polyeval(coeffs, px) - py;
 
           // Calculate the orientation error
           // Due to the sign starting at 0, the orientation error is -f'(x_t).
           // derivative of coeffs[0] + coeffs[1] * x_t -> coeffs[1]
           // double epsi = psi - atan(coeffs[1]);
-          double epsi = psi - atan(coeffs[1] + (2 * coeffs[2] * px) + (3 * coeffs[3]* (px*px)));
+          double epsi = atan(coeffs[1]);
+          // double epsi = psi - atan(coeffs[1] + (2 * coeffs[2] * px) + (3 * coeffs[3]* (px*px)));
+          // double epsi = -atan(coeffs[1] + (2 * coeffs[2] * px) + (3 * coeffs[3]* (px*px)));
 
 
           Eigen::VectorXd state(6);
-          state << px, py, psi, v, cte, epsi;
+          // state << px, py, psi, v, cte, epsi;
+          state << 0.0, 0.0, 0.0, v, cte, epsi;
 
           std::cout << "cte: " << cte
                     << " psi: " << psi
-                    << " psi_des: " << psi - epsi
+                    << " epsi: " << epsi
                     << std::endl;
 
 
           auto vars = mpc.Solve(state, coeffs);
           // std::cout << "vars: " << vars[0] <<" " << vars[1] << std::endl;
           
-          steer_value = vars[0];
+          steer_value = -vars[0];
           throttle_value = vars[1];
 
           json msgJson;
           msgJson["steering_angle"] = steer_value;
           msgJson["throttle"] = throttle_value;
+
+
+          //Display the MPC predicted trajectory 
+          vector<double> mpc_x_vals;
+          vector<double> mpc_y_vals;
+
+          //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
+          // the points in the simulator are connected by a Green line
+
+          msgJson["mpc_x"] = mpc_x_vals;
+          msgJson["mpc_y"] = mpc_y_vals;
+
+          //Display the waypoints/reference line
+          // vector<double> next_x_vals;
+          // vector<double> next_y_vals;
+
+          //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
+          // the points in the simulator are connected by a Yellow line
+          // next_x_vals = ptsx;
+          // next_y_vals = ptsy;
+
+          msgJson["next_x"] = next_x_vals;
+          msgJson["next_y"] = next_y_vals;
+
+
+
           auto msg = "42[\"steer\"," + msgJson.dump() + "]";
           std::cout << msg << std::endl;
           // Latency
