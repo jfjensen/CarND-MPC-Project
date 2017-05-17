@@ -90,8 +90,6 @@ int main() {
           double px = j[1]["x"];
           double py = j[1]["y"];
           double psi = j[1]["psi"];
-          // double psi = j[1]["psi_unity"];
-          // psi = psi - pi();
           double v = j[1]["speed"];
 
 
@@ -116,14 +114,6 @@ int main() {
             double diff_x = current_x - px;
             double diff_y = current_y - py;
 
-            // double psi_veh = psi - (M_PI / 2);
-            // double psi_veh = -psi;
-
-            // double x_transform = - diff_x * sin(psi_veh) + diff_y * cos(psi_veh);
-            // double y_transform = - diff_x * cos(psi_veh) - diff_y * sin(psi_veh);
-            // double x_transform = diff_x * cos(psi_veh) - diff_y * sin(psi_veh);
-            // double y_transform = diff_x * sin(psi_veh) + diff_y * cos(psi_veh);
-
             double x_transform = diff_x * cos(psi) + diff_y * sin(psi);
             double y_transform = -diff_x * sin(psi) + diff_y * cos(psi);
 
@@ -133,35 +123,20 @@ int main() {
             next_y_vals.push_back(y_transform);
           }
 
-          // Eigen::VectorXd ptsx_Xd(2);
-          // Eigen::VectorXd ptsy_Xd(2);
-          // for (int ix = 0; ix < 2; ix++)
-          // {
-          //   ptsx_Xd(ix) = ptsx[ix];
-          //   ptsy_Xd(ix) = ptsy[ix];
-          // }
-          // psi = psi - pi();
           // Fit a polynomial to the above x and y coordinates
           auto coeffs = polyfit(ptsx_Xd, ptsy_Xd, 3); // JFJ
-          // auto coeffs = polyfit(ptsx_Xd, ptsy_Xd, 1); // JFJ
-
+ 
           // The cross track error is calculated by evaluating at polynomial at x_t, f(x_t)
           // and subtracting y.
-          // double cte = polyeval(coeffs, 0.0) - py;
           double cte = polyeval(coeffs, 0.0);
-          // double cte = polyeval(coeffs, px) - py;
-
+ 
           // Calculate the orientation error
           // Due to the sign starting at 0, the orientation error is -f'(x_t).
           // derivative of coeffs[0] + coeffs[1] * x_t -> coeffs[1]
-          // double epsi = psi - atan(coeffs[1]);
           double epsi = atan(coeffs[1]);
-          // double epsi = psi - atan(coeffs[1] + (2 * coeffs[2] * px) + (3 * coeffs[3]* (px*px)));
-          // double epsi = -atan(coeffs[1] + (2 * coeffs[2] * px) + (3 * coeffs[3]* (px*px)));
-
 
           Eigen::VectorXd state(6);
-          // state << px, py, psi, v, cte, epsi;
+
           state << 0.0, 0.0, 0.0, v, cte, epsi;
 
           std::cout << "cte: " << cte
@@ -190,10 +165,6 @@ int main() {
 
           msgJson["mpc_x"] = mpc_x_vals;
           msgJson["mpc_y"] = mpc_y_vals;
-
-          //Display the waypoints/reference line
-          // vector<double> next_x_vals;
-          // vector<double> next_y_vals;
 
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Yellow line
