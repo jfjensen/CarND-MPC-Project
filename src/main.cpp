@@ -127,11 +127,9 @@ int main() {
           auto coeffs = polyfit(ptsx_Xd, ptsy_Xd, 3); // JFJ
  
           // The cross track error is calculated by evaluating at polynomial at x_t, f(x_t)
-          // and subtracting y.
           double cte = polyeval(coeffs, 0.0);
  
           // Calculate the orientation error
-          // Due to the sign starting at 0, the orientation error is -f'(x_t).
           // derivative of coeffs[0] + coeffs[1] * x_t -> coeffs[1]
           double epsi = atan(coeffs[1]);
 
