@@ -2,7 +2,7 @@
 Self-Driving Car Engineer Nanodegree Program
 
 ---
-This README can also be found in this repo as a PDF (in case the equations don't show properly).
+This README can also be found in this repo as a [PDF](https://github.com/jfjensen/CarND-MPC-Project/blob/master/README.pdf) (in case the equations don't show properly).
 
 ## Dependencies
 
