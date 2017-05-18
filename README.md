@@ -110,7 +110,5 @@ With the current state being $[x_0,y_0,\psi_0,v_0,cte_0,e \psi_0] = [0.0,0.0,0.0
 
 ### Timestep Length, Frequency and MPC Latency
 
-the reasoning behind the chosen N (timestep length) and dt (timestep frequency) values. Additionally the student details the previous values tried.
-
-Model Predictive Control that handles a 100 millisecond latency. Student provides details on how they deal with latency.
+Given that MPC has a latency of 100ms, I decided to choose a $dt$ slightly higher than that, namely $dt=0.15$. I then experimented with different values for $N$. Here the best suited value turned out to be $N=11$. The prediction horizon $T$ then becomes $T=(N-1) * dt=10*0.15=1.5$. With higher values of $N$, the vehicle would drive erratically and quickly drive off the track. Lower values, would make the prediction very limited.
 
